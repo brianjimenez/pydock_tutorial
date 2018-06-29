@@ -365,3 +365,143 @@ PyMOL> show spheres, /T26_lig.pdb.nip///52
 **WARNING: These residues are shown here just as an example, you will need to indicate your own residues.**
 
 
+### 3.3. Optimal Docking Area (ODA) analysis or Interface prediction from protein surface desolvation energy
+
+We can analyze the optimal desolvation patch on a protein surface to predict potential binding interface sites with the *ODA* method [4].
+
+This can be useful complementary information in any docking problem. However, in this CAPRI example, given that in our case, *Pal* and *TolB* proteins are part of a much bigger multi-protein complex, the existence of more than one binding region on each of these proteins is more than probable. Consequently, ODA results must be taken carefully as predicted residue(s) may belong to any existing binding interfaces of both proteins.
+
+Run the ODA module for the TolB protein as follows:
+
+```bash
+pydock3 1C5K.pdb oda
+```
+
+and then, once you obtain your 1C5K output files, you can run ODA for the Pal protein:
+
+```bash
+pydock3 1OAP.pdb oda
+```
+
+We will use PyMol to color each residue of the TolB protein according to its ODA calculated value in a gradient from red (ODA values ≤ -10.0) to blue (ODA values ≥ 0.0).
+
+```bash
+PyMOL> load 1C5K.pdb.oda
+PyMOL> spectrum b, red_white_blue, minimum=-10.0, maximum=0.0
+```
+
+Repeat the same process with the Pal protein:
+
+```bash
+PyMOL> load 1OAP.pdb.oda
+PyMOL> spectrum b, red_white_blue, minimum=-10.0, maximum=0.0
+```
+
+## 4. ANALYSIS OF CAPRI RESULTS
+
+### 4.1. Comparison with the real 3D complex structure
+
+Now, you can tell us which is the conformation number you consider to be the best model taking into account pyDock energy ranking (VDW energy included or not), the applied experimental restraints of your choice, ODA predictions, etc...
+
+You can compare the RMSD between your proposed model and the real 3D complex structure (PDB [2HQS](https://www.rcsb.org/structure/2HQS)).
+
+First, you have to generate the pdb file of your favorite conformation (or range of conformations) using the module `makePDB` as follows:
+
+```bash
+pydock3 T26 makePDB 1 3
+```
+
+(this will create pdb files for the docking poses ranked from 1 to 3; replace these numbers by the ones of your favourite docking poses as ranked in the `*.ene` file, RANK column).
+
+#### Remarks:
+
+The `makePDB` module needs 3 arguments:
+
+```bash
+pydock3 dockname makePDB rank1 rank2
+```
+
+which in our example are:
+
+* **dockname:** T26
+* **rank1:** the conformation number you are interested in generating the PDB file, as ranked in the `*.ene` file 
+* **rank2:** the same as rank1 for a single conformation. You may also generate PDB files for a range of conformations (from rank1 to rank2 numbers).
+
+#### Visualizing with Pymol:
+
+Now check that your pdb files appeared. They will be called as `T26_XXX.pdb`, where `XXX` is the conformation number as in the `T26.ene` file (*Conf* column).
+
+You can visually compare the docking models with the complex structure, using PyMol:
+
+```bash
+PyMOL> load 2hqs.pdb
+PyMOL> load T26_XXX.pdb
+PyMOL> hide
+PyMOL> show cartoon, /2hqs//A+H
+PyMOL> color green
+PyMOL> show cartoon, /T26_XXX
+PyMOL> color red, /T26_XXX
+PyMOL> align /T26_XXX//A, /2hqs//A
+```
+
+The complex structure (PDB code 2HQS) has several copies in the asymmetric unit. We will use as reference the complex formed by chains A and H. Check the differences (in terms of RMSD) in the ligand position between your docking models and the real crystallographic structure.
+
+
+Remarks on RMSD:
+
+To facilitate the docking results analysis, the complex pdb (when it is available) can be used as reference in the `.ini` file to compute automatically the RMSD between the real ligand position and the one it adopts in each docking conformation.
+
+The reference is included in the `.ini` file as follows:
+
+```
+[receptor]
+pdb     = REC.pdb
+mol     = A
+newmol  = A
+
+[ligand]
+pdb     = LIG.pdb
+mol     = C
+newmol  = B
+	
+[reference]
+pdb     = REF.pdb
+recmol  = L
+ligmol  = I
+newrecmol  = A
+newligmol  = B
+```
+
+The `newrecmol` must be the same chain name as `newmol` for the receptor, and the `newligmol` must be the same as `newmol` for the ligand.
+
+Using `setup` with this `.ini` file will generate a `dockname_ref.pdb`, and dockser will show the RMSD values in the `*.ene` file (`RMSD` and `intRMSD` new columns, which correspond to the *ligand RMSD* and the *interface RMSD* respectively.
+
+
+## 5. IDEAS FOR DISCUSSION
+
+- Compare the results of pyDock scoring with the original FTDock or ZDOCK scoring. Do you find any change in the number of near-native solutions within the top 10 scored models? Has the best near-native rank improved after pyDock scoring?
+
+- Do restraints help to improve the results? (hint: compare RMSD and find best near-native rank for docking models before and after applying restraints)
+
+- Is NIP-based `patch` prediction located at the real interface?
+
+- Are ODA predicted residues located at the real interface?
+
+- Based on this case, do you think NIP or ODA could be useful to identify real protein-protein interfaces in a real case?
+
+
+## 6. REFERENCES
+
+[1] *Cheng TM, Blundell TL, Fernández-Recio J.* (2007) **pyDock: electrostatics and desolvation for effective scoring of rigid-body protein-protein docking.** *Proteins*. 68, 503-15.
+
+[2] *Janin J, Henrick K, Moult J, Eyck LT, Sternberg MJE, Vajda S, Vakser I, Wodak SJ.* (2003) **CAPRI: A Critical Assessment of PRedicted Interactions Proteins**. *Proteins*. 52, 2-9.
+
+[3] *Grosdidier S, Pons C, Solernou A, Fernández-Recio J*. (2007) **Prediction and scoring of docking poses with pyDock**. *Proteins* 69, 852-858.
+
+[4] *Fernández-Recio J, Totrov M, Skorodumov C, Abagyan R.* (2005) **Optimal docking area: a new method for predicting protein-protein interaction sites**. *Proteins* 58, 134-143.
+
+[5] *Ray MC, Germon P, Vianney A, Portalier R, Lazzaroni JC.* (2000) **Identification by genetic suppression of Escherichia coli TolB residues important for TolB-Pal interaction**. *J Bacteriol*. 182, 821-824.
+
+[6] *Fernández-Recio J, Totrov M, Abagyan R.* (2004) **Identification of protein-protein interaction sites from docking energy landscapes**. *J Mol Biol*. 335, 843-65.
+
+[7] *Grosdidier S,  Fernández-Recio J*. (2008) **Identification of hot-spot residues in protein-protein interactions by computational docking**. *BMC Bioinformatics* 9, 447.
