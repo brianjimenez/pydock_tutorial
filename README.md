@@ -230,7 +230,72 @@ When dockser finishes, take a look to the output file called `T26.ene` that will
 * (6)	**RANK:** conformation rank according to its computed binding energy
 
 
+## 3. ADDITIONAL PREDICTIVE TOOLS
 
+### 3.1. Data-based distance restraints to orient docking
+
+In order to help you in choosing the best models from the starting pool of solutions, you can complement pyDock energy-based ranking with distance restraints derived from experimental data. You can find the information from mutational analysis experiments as described in the following "Experimental data available” section. From there, you can select the residues you think might be located at the interface, and use them as distance restraints as we did in the real CAPRI competition.
+
+
+> **Experimental data available [5]:**
+> 
+> **Ray MC, Germon P, Vianney A, Portalier R, Lazzaroni JC (2000) Identification by genetic suppression of Escherichia coli TolB residues important for TolB-Pal interaction. J Bacteriol 2000; 182: 821-824.**
+> 
+> “(...) The Tol-Pal system of Escherichia coli is involved in maintaining outer membrane stability acting as a barrier to the entry of macromolecules into the bacteria, thus providing protection against deleterious actions of bacteriocins and digestive enzymes. The periplasmic protein TolB was shown to interact with the outer membrane, peptidoglycan-associated proteins OmpA, Lpp, and Pal. Thus, TolB and Pal could be part of a multicomponent system linking the outer membrane to peptidoglycan.
+The aim of this study was to determine the regions of TolB involved in the interaction of the protein with Pal. To this end, we used suppressor genetic techniques which had previously allowed us to characterize the regions of interaction between TolQ, TolR, and TolA. pal point mutations were identified, and some of them involved residues important for interaction with TolB. These mutations induce sensitivity to sodium cholate and release of periplasmic proteins in the medium. We used these pal mutants to search for suppressors in tolB.
+
+> (...)
+**Isolation of extragenic suppressor mutations of pal A88V in tolB.**
+> Twelve mutations affecting 11 different residues of tolB were isolated as suppressor mutations of pal A88V (Table 2). They enabled the pal A88V mutant to grow on plates containing sodium cholate and lowered its excretion of periplasmic enzymes, some mutants being more efficient than others in suppressing the pal A88V phenotype. In most cases, the tolB mutations could not suppress the phenotypes of tolerance to colicins A and E2 of mutant pal A88V. Three tolB point mutations (H246Y, A249V, and T292I) affected the activity of TolB, whereas the others had phenotypes similar to the wild type.
+All the extragenic suppressor mutations of pal A88V are located in the C-terminal region of TolB. This suggests that this region of TolB is important for its interaction with Pal.
+
+> (...)
+**Isolation of intragenic suppressor mutations of pal A88V.** 
+> Mutations pal S99F and pal E102K were both isolated as intragenic suppressor mutations of pal A88V. The pal E102K mutation was previously described as a pal-defective mutant (7). Both pal S99F and pal E102K mutations enabled the pal A88V mutant to grow in the presence of sodium cholate and lowered its excretion of periplasmic enzymes, mutant pal E102K being more efficient than mutant pal S99F as a suppressor mutation (Table 1). Thus, the conformation of the region from residues 88 to 102 appeared to be important for Pal function.(...)”
+
+
+
+Experimental data restraints must be included on a new line of the `*.ini` file as for example:
+
+```
+restr      = A.Arg.36
+```
+
+The `restr` keyword indicates to pyDock that distance restraint(s) will be used.
+
+The restraint residue is defined by its chain name, its 3 letter amino-acid code (first letter in uppercase), and its number, as found in the molecule file used in docking.
+
+When more than one restraint residues are used, they must be separated by comas with no space, as in the following example:
+
+```
+[receptor]
+pdb     = 1C5K.pdb
+mol     = A
+newmol  = A
+restr   = A.Hid.147,A.Arg.36
+
+[ligand]
+pdb     = 1OAP.pdb
+mol     = A
+newmol  = B
+restr   = B.Phe.52
+```
+
+Be careful, **this example is only indicative to understand how restraint(s) must be included before running the pyDockRST module**. You have to include in the `T26.ini` file the experimental restraint(s) of your choice .
+
+To run the corresponding module, type:
+
+```bash
+pydock3 T26 dockrst > dockrst.log &
+```
+
+This run should last several minutes. Once you have your `T26.eneRST` and `T26.rst` files, take a look at them and check how the experimental restraints affected the ranking of the original docking poses. The `T26.eneRST` file is the original `T26.ene` energy file combined with the restraint-based energy and ranked according to this new score.
+
+#### Remarks:
+
+A distance restraint defined from a given putative interface residue is considered satisfied when the center of coordinates of its side-chain lies within a distance of 6 Å from any non-hydrogen atom of the partner molecule.
+
+For each docking solution, the percentage of satisfied restraints is converted to pseudo-energy (just by multiplying by -1.0) and added to the final scoring function in the `*.eneRST` file.
 
 
 
