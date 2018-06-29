@@ -298,5 +298,70 @@ A distance restraint defined from a given putative interface residue is consider
 For each docking solution, the percentage of satisfied restraints is converted to pseudo-energy (just by multiplying by -1.0) and added to the final scoring function in the `*.eneRST` file.
 
 
+### 3.2. Interface prediction from docking results
+
+We can use docking results for interface prediction with the `patch` module. 
+
+This tool gives an idea about the binding interface localization considering the top 100-solutions in pyDock ranking. Of course, **this module is relevant when one is working with thousands of different poses as it reflects the convergence of the top-100 solutions based on their energies**. 
+
+Here, we will use it on our 100 solutions pool to determine if our poses converged around what we will consider the correct interface determined by the *Ray et al.* mutational experimental data.
+
+Use the following line to run the `patch` module that will last only several minutes:
+
+```bash
+pydock3 T26 patch
+```
+
+Take a look to the output files. The `T26.ligNIP` and `T26.recNIP` files contain the list of ligand and receptor residues with their corresponding *NIP* (Normalized Interface Propensity) values. 
+
+The `T26_rec.pdb.nip` and `T26_lig.pdb.nip` files are pdb files in which the B-factor column is replaced by the NIP values, so that the results can be easily visualize with most of molecular graphic programs.
+
+
+#### Remarks:
+
+* The NIP (Normalized Interface Propensity) value represents the frequency of a given residue to be located at the interface among the 100 lowest-energy solutions of docking.
+
+* If NIP = 0, the corresponding residue appears at the interface within the top 100 docking poses as expected by a random distribution.
+	
+* If NIP < 0, the corresponding residue appears at the interface within the top 100 docking poses less than expected by random.
+
+* If NIP > 0.2, the corresponding residue is predicted to be at the interface as it appears significantly more often than expected by random.
+
+
+#### 3.2.1. Visualizing *patch* results
+
+You can visualize `patch` module results (stored in the B-factor column) in PyMol:
+
+```bash
+PyMOL> load T26_rec.pdb.nip
+PyMOL> spectrum b, blue_white_red, minimum=0.0, maximum=0.2
+```
+
+Residues with NIP values ≤ 0.0 will appear in blue whereas NIP values ≥ 0.2 will be in red.
+
+You can do the same with the ligand molecule:
+
+```bash
+PyMOL> load T26_lig.pdb.nip
+PyMOL> spectrum b, blue_white_red, minimum=0.0, maximum=0.2
+```
+
+You can also sort the `T26.recNIP` and `T26.ligNIP` files according to the NIP column and compare the predicted residues (NIP ≥ 0.2) localization with *Ray et al.* mutational data.
+
+Now you can analyze your residues of interest: If you highlight (e.g. display as spheres) the residues known to be involved in complex formation by mutational experiments (e.g. the ones you selected as restraint residues), you can visually compare them with the location of the NIP-based interface predicted residues (in red).
+
+As an example, the following command line highlights H147 and R36 of TolB (receptor):
+
+```bash
+PyMOL> show spheres, /T26_rec.pdb.nip///147+36
+```
+
+Then, another example, shows F52 in Pal (ligand):
+
+```bash
+PyMOL> show spheres, /T26_lig.pdb.nip///52
+```
+
+**WARNING: These residues are shown here just as an example, you will need to indicate your own residues.**
 
 
