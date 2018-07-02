@@ -330,6 +330,8 @@ The `T26_rec.pdb.nip` and `T26_lig.pdb.nip` files are pdb files in which the B-f
 
 #### 3.2.1. Visualizing *patch* results
 
+**NOTE: Depending on Pymol version, files ending in `.nip` might not be opened. Just switch `.nip` extension for `.pdb` instead to avoid this problem.**
+
 You can visualize `patch` module results (stored in the B-factor column) in PyMol:
 
 ```bash
