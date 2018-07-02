@@ -197,7 +197,7 @@ cp T26.rot T26.rot.orig
 **Tip:** you can select *N* lines from a file using `sed`:
 
 ```bash
-sed -n -e '10,110p' T26.rot.orig > T26.rot
+sed -n -e '11,110p' T26.rot.orig > T26.rot
 ```
 
 ### 2.3. Scoring using the pyDock energy function
@@ -444,7 +444,7 @@ PyMOL> color red, /T26_XXX
 PyMOL> align /T26_XXX//A, /2hqs//A
 ```
 
-The complex structure (PDB code 2HQS) has several copies in the asymmetric unit. We will use as reference the complex formed by chains A and H. Check the differences (in terms of RMSD) in the ligand position between your docking models and the real crystallographic structure.
+The complex structure (PDB code 2HQS) has several copies in the asymmetric unit. We will use as reference the complex formed by chains A and H. Check the differences (in terms of RMSD) in the ligand position between your docking models and the real crystallographic structure. You have already in the results folder the `T26_ref.pdb` reference structure created for your convenience.
 
 
 Remarks on RMSD:
